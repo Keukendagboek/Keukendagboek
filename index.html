@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -164,9 +165,37 @@
   .empty-state .empty-icon { font-size: 36px; margin-bottom: 8px; }
 
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+  /* ── Wachtwoord scherm ── */
+  #wachtwoord-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; background: #faf6f0; padding: 20px;
+  }
+  .wachtwoord-card {
+    background: white; border-radius: 16px; padding: 36px 28px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08); width: 100%; max-width: 360px; text-align: center;
+  }
+  .wachtwoord-card h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: #3d2b1f; margin: 12px 0 6px; }
+  .wachtwoord-card p { color: #8b6f47; font-size: 14px; margin-bottom: 24px; }
+  .wachtwoord-card input { text-align: center; font-size: 16px; letter-spacing: 2px; margin-bottom: 12px; }
+  .wachtwoord-card button { width: 100%; padding: 12px; font-size: 15px; }
+  .wachtwoord-fout { color: #c0846a; font-size: 13px; margin-top: 8px; min-height: 20px; }
 </style>
 </head>
 <body>
+
+<!-- Wachtwoord scherm -->
+<div id="wachtwoord-screen" style="display:none;">
+  <div class="wachtwoord-card">
+    <div style="font-size:48px;">🌿</div>
+    <h2>Keukendagboek</h2>
+    <p>Voer het wachtwoord in om verder te gaan</p>
+    <input id="wachtwoord-input" type="password" placeholder="Wachtwoord"
+      onkeydown="if(event.key==='Enter') controleerWachtwoord()" />
+    <button class="btn btn-primary" onclick="controleerWachtwoord()">Inloggen</button>
+    <div class="wachtwoord-fout" id="wachtwoord-fout"></div>
+  </div>
+</div>
 
 <!-- Laadindicator -->
 <div id="loading-screen">
@@ -931,7 +960,43 @@ window.importeerUrl = async function() {
 };
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-init();
+
+const WACHTWOORD_HASH = "32508580b9e53a9e984e03d66d96c4ab640c399a27cab24d9dff50f0ff2caaa7";
+
+async function hashWachtwoord(ww) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(ww);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+async function checkWachtwoord() {
+  // Al ingelogd?
+  if (sessionStorage.getItem("kb-auth") === "ok") {
+    init();
+    return;
+  }
+  document.getElementById("loading-screen").style.display = "none";
+  document.getElementById("wachtwoord-screen").style.display = "flex";
+  setTimeout(() => document.getElementById("wachtwoord-input").focus(), 100);
+}
+
+window.controleerWachtwoord = async function() {
+  const invoer = document.getElementById("wachtwoord-input").value;
+  const hash = await hashWachtwoord(invoer);
+  if (hash === WACHTWOORD_HASH) {
+    sessionStorage.setItem("kb-auth", "ok");
+    document.getElementById("wachtwoord-screen").style.display = "none";
+    document.getElementById("loading-screen").style.display = "flex";
+    init();
+  } else {
+    document.getElementById("wachtwoord-fout").textContent = "Onjuist wachtwoord, probeer opnieuw.";
+    document.getElementById("wachtwoord-input").value = "";
+    document.getElementById("wachtwoord-input").focus();
+  }
+};
+
+checkWachtwoord();
 </script>
 </body>
 </html>
