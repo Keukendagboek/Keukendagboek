@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keukendagboek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #faf6f0; font-family: 'Lato', sans-serif; min-height: 100vh; }
+
+  /* ── Knoppen ── */
+  .btn { cursor: pointer; border: none; border-radius: 8px; padding: 8px 16px; font-family: 'Lato', sans-serif; font-size: 13px; transition: all 0.2s; }
+  .btn-primary { background: #6b8f5e; color: white; }
+  .btn-primary:hover { background: #5a7a4e; }
+  .btn-danger { background: transparent; color: #c0846a; border: 1px solid #c0846a; }
+  .btn-danger:hover { background: #c0846a; color: white; }
+  .btn-ghost { background: transparent; color: #8b6f47; border: 1px solid #d4b896; }
+  .btn-ghost:hover { background: #f0e6d8; }
+
+  /* ── Inputs ── */
+  input, select, textarea {
+    font-family: 'Lato', sans-serif; font-size: 14px;
+    border: 1px solid #d4b896; border-radius: 8px; padding: 8px 12px;
+    background: white; color: #3d2b1f; outline: none; transition: border 0.2s; width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #6b8f5e; }
+
+  /* ── Cards ── */
+  .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid #f0e6d8; }
+  .card-dashed { background: #fdf9f4; border: 1px dashed #c4a882; }
+
+  /* ── Tags ── */
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .tag-koelkast { background: #dbeafe; color: #1e40af; }
+  .tag-vriezer { background: #e0f2fe; color: #0369a1; }
+  .tag-voorraadkast { background: #fef3c7; color: #92400e; }
+
+  .strikethrough { text-decoration: line-through; color: #b0a090; }
+
+  /* ── Header ── */
+  #header {
+    background: linear-gradient(135deg, #2d3d1f 0%, #4a5e2a 60%, #6b7c3e 100%);
+    padding: 24px 20px 0;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+    position: sticky; top: 0; z-index: 100;
+  }
+  #header-inner { max-width: 680px; margin: 0 auto; }
+  #header-title { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  #header-title h1 { font-family: 'Playfair Display', serif; color: #fdf4e7; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+  #header-title p { color: #c4d4a8; font-size: 12px; font-weight: 300; margin-top: 2px; }
+  #sync-status { font-size: 11px; color: #c4d4a8; margin-top: 2px; }
+
+  /* ── Tabs ── */
+  #tabs { display: flex; gap: 2px; }
+  .tab-btn {
+    background: transparent; color: #c4d4a8; border: none;
+    border-radius: 8px 8px 0 0; padding: 10px 14px;
+    font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 400;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  .tab-btn.active { background: #faf6f0; color: #3d2b1f; font-weight: 700; }
+
+  /* ── Content ── */
+  #content { max-width: 680px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  /* ── Tabbladen ── */
+  .tabpanel { display: none; }
+  .tabpanel.active { display: block; }
+
+  /* ── Section titel ── */
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 22px; color: #3d2b1f; }
+
+  /* ── Filterknopjes ── */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 6px 14px; border-radius: 20px; border: 1px solid #d4b896;
+    cursor: pointer; font-size: 12px; font-family: 'Lato', sans-serif; font-weight: 400;
+    background: white; color: #8b6f47; transition: all 0.2s;
+  }
+  .filter-btn.active { background: #3d2b1f; color: white; border-color: #3d2b1f; font-weight: 700; }
+
+  /* ── Lijst items ── */
+  .item-list { display: flex; flex-direction: column; gap: 8px; }
+  .item-row { display: flex; align-items: center; gap: 10px; }
+
+  /* ── Check cirkel ── */
+  .check-btn {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid #d4b896;
+    background: transparent; cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;
+    transition: all 0.2s;
+  }
+  .check-btn.checked { background: #6b8f5e; border-color: #6b8f5e; }
+
+  /* ── Jumbo knop ── */
+  .jumbo-btn {
+    padding: 5px 9px; border-radius: 8px; border: 1px solid #e8c840;
+    background: #fffbe6; color: #8a6800; font-size: 12px; text-decoration: none;
+    flex-shrink: 0; font-family: 'Lato', sans-serif; font-weight: 700;
+  }
+
+  /* ── Weekplanning ── */
+  .dag-card { margin-bottom: 8px; }
+  .dag-naam { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 600; color: #3d2b1f; margin-bottom: 10px; text-transform: capitalize; }
+  .maaltijd-rij { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .maaltijd-label { width: 64px; font-size: 11px; color: #b0a090; text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; }
+  .maaltijd-waarde {
+    flex: 1; background: #f5f0ea; border: 1px solid #e8ddd0;
+    border-radius: 6px; padding: 6px 10px; cursor: pointer;
+    font-size: 13px; color: #3d2b1f; font-family: 'Lato', sans-serif;
+    transition: background 0.2s;
+  }
+  .maaltijd-waarde.leeg { background: transparent; border: 1px dashed #d4b896; color: #c4a882; }
+  .maaltijd-waarde:hover { background: #ede6da; }
+
+  /* ── Recept detail ── */
+  .recept-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+
+  /* ── Setup scherm ── */
+  #setup-screen {
+    max-width: 560px; margin: 40px auto; padding: 0 16px;
+  }
+  .setup-card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+  .setup-card h2 { font-family: 'Playfair Display', serif; font-size: 24px; color: #3d2b1f; margin-bottom: 8px; }
+  .setup-card p { color: #8b6f47; font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+  .setup-stap { background: #f5f0ea; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .setup-stap strong { font-size: 13px; color: #3d2b1f; display: block; margin-bottom: 4px; }
+  .setup-stap span { font-size: 13px; color: #8b6f47; line-height: 1.5; }
+  .setup-stap a { color: #6b8f5e; }
+  .config-input { margin-top: 8px; }
+  .config-input label { font-size: 12px; color: #8b6f47; display: block; margin-bottom: 4px; margin-top: 8px; }
+  .opslaan-btn { width: 100%; margin-top: 16px; padding: 12px; font-size: 15px; }
+
+  /* ── Laadindicator ── */
+  #loading-screen {
+    display: flex; align-items: center; justify-content: center;
+    height: 100vh; background: #faf6f0;
+    font-family: 'Playfair Display', serif; color: #8b6f47;
+    flex-direction: column; gap: 12px;
+  }
+  #loading-screen .icon { font-size: 48px; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: #3d2b1f; color: #fdf4e7; padding: 10px 20px; border-radius: 20px;
+    font-size: 13px; font-family: 'Lato', sans-serif; transition: transform 0.3s; z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ── Formulieren ── */
+  .form-grid { display: grid; gap: 10px; }
+  .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-actions { display: flex; gap: 8px; margin-top: 4px; }
+
+  .sublabel { font-size: 11px; color: #b0a090; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 8px; }
+
+  .empty-state { text-align: center; color: #b0a090; padding: 32px; }
+  .empty-state .empty-icon { font-size: 36px; margin-bottom: 8px; }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<!-- Laadindicator -->
+<div id="loading-screen">
+  <div class="icon">🌿</div>
+  <div>Laden...</div>
+</div>
+
+<!-- Setup scherm (verborgen totdat nodig) -->
+<div id="setup-screen" style="display:none;">
+  <div style="text-align:center; margin-bottom:24px;">
+    <span style="font-size:48px;">🌿</span>
+    <h1 style="font-family:'Playfair Display',serif; font-size:28px; color:#3d2b1f; margin-top:8px;">Keukendagboek</h1>
+  </div>
+  <div class="setup-card">
+    <h2>Eerste keer instellen</h2>
+    <p>Om de app te delen met je huishouden, heb je een gratis Firebase-database nodig. Volg de stappen hieronder — duurt ongeveer 5 minuten.</p>
+
+    <div class="setup-stap">
+      <strong>Stap 1 — Maak een gratis Firebase project aan</strong>
+      <span>Ga naar <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a>, klik op <em>"Add project"</em>, geef het een naam (bijv. "Keukendagboek") en maak het aan. Google Analytics mag je uitschakelen.</span>
+    </div>
+
+    <div class="setup-stap">
+      <strong>Stap 2 — Zet een database aan</strong>
+      <span>In je project, ga naar <em>Build → Firestore Database → Create database</em>. Kies <em>"Start in test mode"</em> en selecteer een server in Europa (bijv. <em>eur3</em>).</span>
+    </div>
+
+    <div class="setup-stap">
+      <strong>Stap 3 — Haal je app-configuratie op</strong>
+      <span>Ga naar <em>Project Settings (tandwiel) → General → Your apps → Web app (&lt;/&gt;)</em>. Registreer een app en kopieer de config-gegevens hieronder.</span>
+    </div>
+
+    <div class="setup-stap">
+      <strong>Stap 4 — Vul je gegevens in</strong>
+      <div class="config-input">
+        <label>API Key</label>
+        <input id="cfg-apiKey" placeholder="AIzaSy..." />
+        <label>Auth Domain</label>
+        <input id="cfg-authDomain" placeholder="jouwproject.firebaseapp.com" />
+        <label>Project ID</label>
+        <input id="cfg-projectId" placeholder="jouwproject" />
+        <label>App ID</label>
+        <input id="cfg-appId" placeholder="1:123456:web:abcdef" />
+      </div>
+    </div>
+
+    <button class="btn btn-primary opslaan-btn" onclick="slaConfigOp()">Opslaan en starten →</button>
+    <p style="font-size:11px; color:#b0a090; margin-top:12px; margin-bottom:0;">Je gegevens worden alleen lokaal opgeslagen op dit apparaat.</p>
+  </div>
+</div>
+
+<!-- Hoofd app (verborgen totdat geladen) -->
+<div id="app" style="display:none;">
+  <div id="header">
+    <div id="header-inner">
+      <div id="header-title">
+        <span style="font-size:32px;">🌿</span>
+        <div>
+          <h1>Keukendagboek</h1>
+          <p>Jouw persoonlijke voedselplanner</p>
+          <div id="sync-status">⏳ Verbinding maken...</div>
+        </div>
+      </div>
+      <div id="tabs">
+        <button class="tab-btn active" onclick="toonTab('voorraad', this)">🧺 <span>Voorraad</span></button>
+        <button class="tab-btn" onclick="toonTab('boodschappen', this)">🛒 <span>Boodschappen</span></button>
+        <button class="tab-btn" onclick="toonTab('planning', this)">📅 <span>Planning</span></button>
+        <button class="tab-btn" onclick="toonTab('recepten', this)">📖 <span>Recepten</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="content">
+    <!-- VOORRAAD -->
+    <div id="tab-voorraad" class="tabpanel active">
+      <div class="section-header">
+        <h2 class="section-title">Wat heb ik in huis?</h2>
+        <button class="btn btn-primary" onclick="toggleFormulier('voorraad-form')">+ Toevoegen</button>
+      </div>
+      <div class="filter-bar" id="voorraad-filters">
+        <button class="filter-btn active" onclick="filterVoorraad('alles', this)">Alles</button>
+        <button class="filter-btn" onclick="filterVoorraad('koelkast', this)">🧊 Koelkast</button>
+        <button class="filter-btn" onclick="filterVoorraad('vriezer', this)">❄️ Vriezer</button>
+        <button class="filter-btn" onclick="filterVoorraad('voorraadkast', this)">🗄️ Voorraadkast</button>
+      </div>
+      <div id="voorraad-form" class="card card-dashed" style="display:none; margin-bottom:16px;">
+        <div class="form-grid">
+          <input id="v-naam" placeholder="Productnaam" />
+          <div class="form-2col">
+            <select id="v-locatie">
+              <option value="koelkast">🧊 Koelkast</option>
+              <option value="vriezer">❄️ Vriezer</option>
+              <option value="voorraadkast">🗄️ Voorraadkast</option>
+            </select>
+            <input id="v-hoeveelheid" placeholder="Hoeveelheid (bijv. 500g)" />
+          </div>
+          <input id="v-houdbaar" type="date" />
+          <div class="form-actions">
+            <button class="btn btn-primary" onclick="voegVoorraadToe()">Opslaan</button>
+            <button class="btn btn-ghost" onclick="toggleFormulier('voorraad-form')">Annuleren</button>
+          </div>
+        </div>
+      </div>
+      <div id="voorraad-lijst" class="item-list"></div>
+    </div>
+
+    <!-- BOODSCHAPPEN -->
+    <div id="tab-boodschappen" class="tabpanel">
+      <div class="section-header">
+        <h2 class="section-title">Boodschappenlijst</h2>
+        <div class="btn-row" id="boodschappen-acties"></div>
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+        <input id="b-naam" placeholder="Product of taak toevoegen..." onkeydown="if(event.key==='Enter') voegBoodschapToe()" style="flex:1;min-width:160px;" />
+        <select id="b-winkel" style="flex:0 0 auto; width:auto; max-width:160px;">
+          <option value="Jumbo">🛒 Jumbo</option>
+          <option value="Online">💻 Online</option>
+          <option value="Overig">📍 Overig</option>
+        </select>
+        <button class="btn btn-primary" onclick="voegBoodschapToe()">+</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:20px;align-items:center;">
+        <input id="b-winkel-nieuw" placeholder="+ Nieuwe winkel toevoegen..." onkeydown="if(event.key==='Enter') voegWinkelToe()" style="flex:1;" />
+        <button class="btn btn-ghost" onclick="voegWinkelToe()" style="font-size:12px;white-space:nowrap;">Toevoegen</button>
+      </div>
+      <div id="boodschappen-lijst"></div>
+    </div>
+
+    <!-- WEEKPLANNING -->
+    <div id="tab-planning" class="tabpanel">
+      <div class="section-header">
+        <h2 class="section-title">Weekplanning</h2>
+      </div>
+      <div id="planning-grid"></div>
+    </div>
+
+    <!-- RECEPTEN -->
+    <div id="tab-recepten" class="tabpanel">
+      <div id="recepten-overzicht">
+        <div class="section-header">
+          <h2 class="section-title">Recepten</h2>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-ghost" onclick="toggleFormulier('url-import-form')">🔗 Via URL</button>
+            <button class="btn btn-primary" onclick="toggleFormulier('recept-form')">+ Handmatig</button>
+          </div>
+        </div>
+        <input id="recept-zoek" placeholder="Zoek een recept..." oninput="renderRecepten()" style="margin-bottom:16px;" />
+
+        <!-- URL import -->
+        <div id="url-import-form" class="card" style="display:none; margin-bottom:16px; background:#f4f9f4; border:1px dashed #8fbb82;">
+          <h3 style="font-family:'Playfair Display',serif; font-size:16px; color:#3d2b1f; margin-bottom:6px;">🔗 Recept importeren via URL</h3>
+          <p style="font-size:13px; color:#8b6f47; margin-bottom:12px;">Plak een link van een receptenwebsite — Claude haalt het recept op en zet het klaar.</p>
+          <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <input id="import-url" placeholder="https://www.ah.nl/allerhande/recept/..." onkeydown="if(event.key==='Enter') importeerUrl()" />
+            <button class="btn btn-primary" id="import-btn" onclick="importeerUrl()" style="white-space:nowrap;">Importeer</button>
+          </div>
+          <div id="import-status"></div>
+        </div>
+
+        <!-- Handmatig formulier -->
+        <div id="recept-form" class="card card-dashed" style="display:none; margin-bottom:16px;">
+          <h3 style="font-family:'Playfair Display',serif; font-size:16px; color:#3d2b1f; margin-bottom:12px;">Nieuw recept</h3>
+          <div class="form-grid">
+            <input id="r-naam" placeholder="Naam van het recept" />
+            <input id="r-beschrijving" placeholder="Korte beschrijving" />
+            <div class="form-2col">
+              <input id="r-tijd" placeholder="Bereidingstijd (bijv. 30 min)" />
+              <input id="r-personen" type="number" placeholder="Personen" min="1" value="4" />
+            </div>
+            <textarea id="r-ingredienten" rows="5" placeholder="Ingrediënten (één per regel):&#10;400g pasta&#10;300g gehakt&#10;1 ui"></textarea>
+            <div class="form-actions">
+              <button class="btn btn-primary" onclick="slaReceptOp()">Opslaan</button>
+              <button class="btn btn-ghost" onclick="toggleFormulier('recept-form')">Annuleren</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="recepten-lijst" class="item-list"></div>
+      </div>
+
+      <!-- Recept detail -->
+      <div id="recept-detail" style="display:none;">
+        <button class="btn btn-ghost" onclick="sluitReceptDetail()" style="margin-bottom:16px;">← Terug</button>
+        <div class="card" id="recept-detail-inhoud"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── Constanten ───────────────────────────────────────────────────────────────
+const LOCATIE_ICONS = { koelkast: "🧊", vriezer: "❄️", voorraadkast: "🗄️" };
+const DAGEN = ["maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag","zondag"];
+const MAALTIJDEN = ["ontbijt","lunch","diner"];
+const DEFAULT_DATA = {
+  voorraad: [],
+  boodschappen: [],
+  weekplanning: Object.fromEntries(DAGEN.map(d => [d, { ontbijt:"", lunch:"", diner:"" }])),
+  recepten: []
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+let db = null;
+let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+let voorraadFilter = "alles";
+let huidigRecept = null;
+
+// ── Firebase config (opgeslagen in localStorage) ─────────────────────────────
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem("kb-firebase-config")); }
+  catch { return null; }
+}
+
+window.slaConfigOp = function() {
+  const cfg = {
+    apiKey: document.getElementById("cfg-apiKey").value.trim(),
+    authDomain: document.getElementById("cfg-authDomain").value.trim(),
+    projectId: document.getElementById("cfg-projectId").value.trim(),
+    appId: document.getElementById("cfg-appId").value.trim(),
+  };
+  if (!cfg.apiKey || !cfg.projectId) { alert("Vul minimaal de API Key en Project ID in."); return; }
+  localStorage.setItem("kb-firebase-config", JSON.stringify(cfg));
+  location.reload();
+};
+
+// ── Opslaan naar Firebase ────────────────────────────────────────────────────
+async function opslaan(nieuweData) {
+  data = nieuweData;
+  render();
+  if (!db) return;
+  try {
+    await setDoc(doc(db, "huishouden", "data"), nieuweData);
+  } catch(e) { toast("⚠️ Opslaan mislukt"); }
+}
+
+// ── Initialisatie ─────────────────────────────────────────────────────────────
+async function init() {
+  const config = getConfig();
+  document.getElementById("loading-screen").style.display = "none";
+
+  if (!config) {
+    document.getElementById("setup-screen").style.display = "block";
+    return;
+  }
+
+  document.getElementById("app").style.display = "block";
+
+  try {
+    const app = initializeApp(config);
+    db = getFirestore(app);
+
+    // Real-time listener
+    onSnapshot(doc(db, "huishouden", "data"), (snap) => {
+      if (snap.exists()) {
+        data = snap.data();
+        render();
+        document.getElementById("sync-status").textContent = "✓ Gesynchroniseerd";
+      } else {
+        opslaan(DEFAULT_DATA);
+      }
+    }, (err) => {
+      document.getElementById("sync-status").textContent = "⚠️ Geen verbinding";
+    });
+
+    document.getElementById("sync-status").textContent = "✓ Verbonden";
+  } catch(e) {
+    document.getElementById("sync-status").textContent = "⚠️ Firebase fout — controleer je instellingen";
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+window.toast = function(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+};
+
+// ── Tab navigatie ─────────────────────────────────────────────────────────────
+window.toonTab = function(naam, btn) {
+  document.querySelectorAll(".tabpanel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + naam).classList.add("active");
+  btn.classList.add("active");
+};
+
+// ── Formulieren ───────────────────────────────────────────────────────────────
+window.toggleFormulier = function(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === "none" ? "block" : "none";
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function isVerlopen(datum) { return datum && new Date(datum) < new Date(); }
+function bijtijds(datum) {
+  if (!datum) return false;
+  const diff = (new Date(datum) - new Date()) / 86400000;
+  return diff >= 0 && diff <= 3;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════════════════
+function render() {
+  renderVoorraad();
+  renderBoodschappen();
+  renderPlanning();
+  renderRecepten();
+}
+
+// ── VOORRAAD ──────────────────────────────────────────────────────────────────
+window.filterVoorraad = function(f, btn) {
+  voorraadFilter = f;
+  document.querySelectorAll("#voorraad-filters .filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderVoorraad();
+};
+
+function renderVoorraad() {
+  const lijst = document.getElementById("voorraad-lijst");
+  const items = voorraadFilter === "alles"
+    ? (data.voorraad || [])
+    : (data.voorraad || []).filter(i => i.locatie === voorraadFilter);
+
+  if (items.length === 0) {
+    lijst.innerHTML = `<div class="card empty-state"><div class="empty-icon">🧺</div><div>Nog niets hier</div></div>`;
+    return;
+  }
+
+  lijst.innerHTML = items.map(item => {
+    const verlopen = isVerlopen(item.houdbaar);
+    const bijna = bijtijds(item.houdbaar);
+    const borderColor = verlopen ? "#e05a5a" : bijna ? "#f0a830" : "transparent";
+    const datumTekst = item.houdbaar
+      ? `${verlopen ? "⚠️ Verlopen" : bijna ? "⏰" : "📅"} ${new Date(item.houdbaar).toLocaleDateString("nl-NL", {day:"numeric",month:"short"})}`
+      : "";
+    return `
+      <div class="card item-row" style="border-left:3px solid ${borderColor};">
+        <span style="font-size:22px;flex-shrink:0;">${LOCATIE_ICONS[item.locatie]}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:15px;color:#3d2b1f;">${item.naam}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;align-items:center;">
+            <span class="tag tag-${item.locatie}">${item.locatie}</span>
+            ${item.hoeveelheid ? `<span style="font-size:12px;color:#8b6f47;">${item.hoeveelheid}</span>` : ""}
+            ${datumTekst ? `<span style="font-size:12px;color:${verlopen?"#e05a5a":bijna?"#f0a830":"#8b6f47"};">${datumTekst}</span>` : ""}
+          </div>
+        </div>
+        <button class="btn btn-ghost" onclick="voorraadNaarBoodschappen('${item.id}')" title="Op boodschappenlijst" style="padding:6px 10px;font-size:16px;flex-shrink:0;">🛒</button>
+        <button class="btn btn-danger" onclick="verwijderVoorraad('${item.id}')" style="padding:6px 10px;font-size:14px;flex-shrink:0;">✕</button>
+      </div>`;
+  }).join("");
+}
+
+window.voegVoorraadToe = function() {
+  const naam = document.getElementById("v-naam").value.trim();
+  if (!naam) return;
+  const item = {
+    id: Date.now().toString(),
+    naam,
+    locatie: document.getElementById("v-locatie").value,
+    hoeveelheid: document.getElementById("v-hoeveelheid").value.trim(),
+    houdbaar: document.getElementById("v-houdbaar").value,
+  };
+  const nieuw = { ...data, voorraad: [...(data.voorraad||[]), item] };
+  opslaan(nieuw);
+  ["v-naam","v-hoeveelheid","v-houdbaar"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("voorraad-form").style.display = "none";
+};
+
+window.verwijderVoorraad = function(id) {
+  opslaan({ ...data, voorraad: (data.voorraad||[]).filter(i => i.id !== id) });
+};
+
+window.voorraadNaarBoodschappen = function(id) {
+  const item = (data.voorraad||[]).find(i => i.id === id);
+  if (!item) return;
+  const al = (data.boodschappen||[]).some(b => b.naam.toLowerCase() === item.naam.toLowerCase());
+  const boodschappen = al ? data.boodschappen : [...(data.boodschappen||[]), { id: Date.now().toString(), naam: item.naam, gekocht: false }];
+  opslaan({ ...data, voorraad: (data.voorraad||[]).filter(i => i.id !== id), boodschappen });
+  toast("🛒 " + item.naam + " op je lijst gezet");
+};
+
+// ── BOODSCHAPPEN ──────────────────────────────────────────────────────────────
+function renderBoodschappen() {
+  const teDoen = (data.boodschappen||[]).filter(b => !b.gekocht);
+  const gekocht = (data.boodschappen||[]).filter(b => b.gekocht);
+
+  // Actieknoppen
+  const acties = document.getElementById("boodschappen-acties");
+  acties.innerHTML = `
+    ${teDoen.length > 0 ? `<button class="btn btn-ghost" onclick="kopieerLijst()" style="font-size:12px;">📋 Kopieer lijst</button>` : ""}
+    ${gekocht.length > 0 ? `<button class="btn btn-ghost" onclick="wisGekocht()" style="font-size:12px;">Gekochte wissen</button>` : ""}
+  `;
+
+  // Update winkel select opties
+  updateWinkelSelect();
+
+  const lijst = document.getElementById("boodschappen-lijst");
+  if ((data.boodschappen||[]).length === 0) {
+    lijst.innerHTML = `<div class="card empty-state"><div class="empty-icon">🛒</div><div>Je lijst is leeg — wat heerlijk!</div></div>`;
+    return;
+  }
+
+  const winkelIcons = { "Jumbo":"🛒", "Online":"💻", "Overig":"📍" };
+  const winkelKleuren = { "Jumbo":"#fff9e6", "Online":"#e8f4f8", "Overig":"#f5f0ea" };
+
+  const renderItem = (item) => {
+    const isJumbo = item.winkel === "Jumbo";
+    const jumboUrl = `https://www.jumbo.com/producten/?searchType=keyword&searchTerms=${encodeURIComponent(item.naam)}`;
+    return `
+    <div class="card item-row" style="opacity:${item.gekocht?0.6:1};">
+      <button class="check-btn ${item.gekocht?"checked":""}" onclick="toggleBoodschap('${item.id}')">
+        ${item.gekocht?"✓":""}
+      </button>
+      <span style="flex:1;font-size:15px;color:#3d2b1f;" class="${item.gekocht?"strikethrough":""}">${item.naam}</span>
+      ${!item.gekocht && isJumbo ? `<a href="${jumboUrl}" target="_blank" class="jumbo-btn">🛍 Jumbo</a>` : ""}
+      ${item.gekocht ? `<button class="btn btn-ghost" onclick="boodschapNaarVoorraad('${item.id}')" style="padding:4px 8px;font-size:12px;flex-shrink:0;">→ voorraad</button>` : ""}
+      <button class="btn btn-danger" onclick="verwijderBoodschap('${item.id}')" style="padding:6px 10px;font-size:14px;flex-shrink:0;">✕</button>
+    </div>`;
+  };
+
+  // Cluster op winkel
+  const winkels = [...new Set(teDoen.map(b => b.winkel || "Overig"))];
+  const gekleurd = winkels.map(winkel => {
+    const items = teDoen.filter(b => (b.winkel||"Overig") === winkel);
+    const icon = winkelIcons[winkel] || "🏪";
+    const kleur = winkelKleuren[winkel] || "#f5f0ea";
+    return `
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <div style="background:${kleur};border-radius:20px;padding:4px 14px;font-family:'Lato',sans-serif;font-size:12px;font-weight:700;color:#3d2b1f;">${icon} ${winkel}</div>
+          <span style="font-size:11px;color:#b0a090;">${items.length} item${items.length!==1?"s":""}</span>
+        </div>
+        <div class="item-list">${items.map(renderItem).join("")}</div>
+      </div>`;
+  }).join("");
+
+  const gekochtHtml = gekocht.length === 0 ? "" : `
+    <div style="margin-top:8px;">
+      <div class="sublabel">Gekocht (${gekocht.length})</div>
+      <div class="item-list">${gekocht.map(renderItem).join("")}</div>
+    </div>`;
+
+  lijst.innerHTML = gekleurd + gekochtHtml;
+}
+
+window.voegBoodschapToe = function() {
+  const naam = document.getElementById("b-naam").value.trim();
+  if (!naam) return;
+  const winkelEl = document.getElementById("b-winkel");
+  const winkel = winkelEl ? winkelEl.value : "Overig";
+  opslaan({ ...data, boodschappen: [...(data.boodschappen||[]), { id: Date.now().toString(), naam, winkel, gekocht: false }] });
+  document.getElementById("b-naam").value = "";
+};
+
+window.voegWinkelToe = function() {
+  const naam = document.getElementById("b-winkel-nieuw").value.trim();
+  if (!naam) return;
+  const winkels = getWinkels();
+  if (!winkels.includes(naam)) {
+    winkels.push(naam);
+    localStorage.setItem("kb-winkels", JSON.stringify(winkels));
+    updateWinkelSelect();
+  }
+  document.getElementById("b-winkel-nieuw").value = "";
+  toast("✓ Winkel '" + naam + "' toegevoegd");
+};
+
+function getWinkels() {
+  try { return JSON.parse(localStorage.getItem("kb-winkels")) || ["Jumbo","Online","Overig"]; }
+  catch { return ["Jumbo","Online","Overig"]; }
+}
+
+function updateWinkelSelect() {
+  const sel = document.getElementById("b-winkel");
+  if (!sel) return;
+  const winkels = getWinkels();
+  const huidig = sel.value;
+  const icons = { "Jumbo":"🛒", "Online":"💻", "Overig":"📍" };
+  sel.innerHTML = winkels.map(w => `<option value="${w}" ${w===huidig?"selected":""}>${icons[w]||"🏪"} ${w}</option>`).join("");
+};
+
+window.toggleBoodschap = function(id) {
+  opslaan({ ...data, boodschappen: (data.boodschappen||[]).map(b => b.id === id ? { ...b, gekocht: !b.gekocht } : b) });
+};
+
+window.verwijderBoodschap = function(id) {
+  opslaan({ ...data, boodschappen: (data.boodschappen||[]).filter(b => b.id !== id) });
+};
+
+window.boodschapNaarVoorraad = function(id) {
+  const item = (data.boodschappen||[]).find(b => b.id === id);
+  if (!item) return;
+  opslaan({
+    ...data,
+    boodschappen: (data.boodschappen||[]).filter(b => b.id !== id),
+    voorraad: [...(data.voorraad||[]), { id: Date.now().toString(), naam: item.naam, locatie: "koelkast", hoeveelheid: "", houdbaar: "" }],
+  });
+};
+
+window.wisGekocht = function() {
+  opslaan({ ...data, boodschappen: (data.boodschappen||[]).filter(b => !b.gekocht) });
+};
+
+window.kopieerLijst = function() {
+  const teDoen = (data.boodschappen||[]).filter(b => !b.gekocht);
+  if (teDoen.length === 0) return;
+  const winkels = [...new Set(teDoen.map(b => b.winkel || "Overig"))];
+  const tekst = "🛒 Boodschappenlijst\n\n" + winkels.map(w => {
+    const items = teDoen.filter(b => (b.winkel||"Overig") === w);
+    return `📍 ${w}\n` + items.map(b => `  • ${b.naam}`).join("\n");
+  }).join("\n\n");
+  const kopieer = (t) => {
+    const ta = document.createElement("textarea");
+    ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand("copy"); } catch(e) {}
+    document.body.removeChild(ta);
+    toast("✓ Lijst gekopieerd!");
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(tekst).then(() => toast("✓ Lijst gekopieerd!")).catch(() => kopieer(tekst));
+  } else {
+    kopieer(tekst);
+  }
+};
+
+// ── WEEKPLANNING ──────────────────────────────────────────────────────────────
+function renderPlanning() {
+  const grid = document.getElementById("planning-grid");
+  const receptNamen = (data.recepten||[]).map(r => r.naam);
+  grid.innerHTML = DAGEN.map(dag => {
+    const dagData = (data.weekplanning||{})[dag] || { ontbijt:"", lunch:"", diner:"" };
+    return `
+      <div class="card dag-card">
+        <div class="dag-naam">${dag}</div>
+        ${MAALTIJDEN.map(maaltijd => {
+          const val = dagData[maaltijd] || "";
+          return `
+          <div class="maaltijd-rij">
+            <span class="maaltijd-label">${maaltijd}</span>
+            <div class="maaltijd-waarde ${val?"":"leeg"}" onclick="bewerkMaaltijd('${dag}','${maaltijd}',this)" data-dag="${dag}" data-maaltijd="${maaltijd}">
+              ${val || "Klik om in te vullen..."}
+            </div>
+          </div>`;
+        }).join("")}
+      </div>`;
+  }).join("");
+}
+
+window.bewerkMaaltijd = function(dag, maaltijd, el) {
+  const huidig = (data.weekplanning||{})[dag]?.[maaltijd] || "";
+  const receptNamen = (data.recepten||[]).map(r => r.naam);
+  const datalistId = "recept-suggesties";
+
+  const input = document.createElement("input");
+  input.value = huidig;
+  input.placeholder = "Wat eet je?";
+  input.setAttribute("list", datalistId);
+  input.style.cssText = "flex:1;";
+
+  let datalist = document.getElementById(datalistId);
+  if (!datalist) {
+    datalist = document.createElement("datalist");
+    datalist.id = datalistId;
+    document.body.appendChild(datalist);
+  }
+  datalist.innerHTML = receptNamen.map(n => `<option value="${n}">`).join("");
+
+  const ok = document.createElement("button");
+  ok.className = "btn btn-primary";
+  ok.textContent = "OK";
+  ok.style.cssText = "padding:6px 12px;white-space:nowrap;flex-shrink:0;";
+
+  const rij = el.parentElement;
+  el.replaceWith(input);
+  rij.appendChild(ok);
+  input.focus();
+
+  const sla = () => {
+    const val = input.value.trim();
+    const nieuw = {
+      ...data,
+      weekplanning: {
+        ...(data.weekplanning||{}),
+        [dag]: { ...((data.weekplanning||{})[dag]||{}), [maaltijd]: val }
+      }
+    };
+    opslaan(nieuw);
+  };
+  ok.onclick = sla;
+  input.onkeydown = e => { if (e.key === "Enter") sla(); };
+};
+
+// ── RECEPTEN ──────────────────────────────────────────────────────────────────
+window.renderRecepten = function() {
+  const zoek = (document.getElementById("recept-zoek")||{}).value || "";
+  const gefilterd = (data.recepten||[]).filter(r => r.naam.toLowerCase().includes(zoek.toLowerCase()));
+  const lijst = document.getElementById("recepten-lijst");
+
+  if (gefilterd.length === 0) {
+    lijst.innerHTML = `<div class="card empty-state"><div class="empty-icon">📖</div><div>Nog geen recepten</div></div>`;
+    return;
+  }
+
+  lijst.innerHTML = gefilterd.map(r => `
+    <div class="card" style="cursor:pointer;" onclick="toonReceptDetail('${r.id}')"
+      onmouseenter="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.1)'"
+      onmouseleave="this.style.boxShadow=''">
+      <div style="display:flex;justify-content:space-between;align-items:start;">
+        <div>
+          <div style="font-family:'Playfair Display',serif;font-size:17px;color:#3d2b1f;font-weight:600;">${r.naam}</div>
+          ${r.beschrijving ? `<div style="font-size:13px;color:#8b6f47;margin-top:3px;font-style:italic;">${r.beschrijving}</div>` : ""}
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            ${r.bereidingstijd ? `<span class="tag" style="background:#f0f9f0;color:#4a7a3e;">⏱ ${r.bereidingstijd}</span>` : ""}
+            ${r.personen ? `<span class="tag" style="background:#fff3e0;color:#8b5000;">👤 ${r.personen} p.</span>` : ""}
+            <span class="tag" style="background:#f5f0ea;color:#8b6f47;">🥕 ${(r.ingredienten||[]).length} ingr.</span>
+            ${r.bronUrl ? `<span class="tag" style="background:#e8f4e8;color:#4a7a3e;">🔗 web</span>` : ""}
+          </div>
+        </div>
+        <span style="color:#c4a882;font-size:18px;margin-left:8px;">→</span>
+      </div>
+    </div>`).join("");
+};
+
+window.toonReceptDetail = function(id) {
+  huidigRecept = (data.recepten||[]).find(r => r.id == id);
+  if (!huidigRecept) return;
+  const r = huidigRecept;
+  document.getElementById("recepten-overzicht").style.display = "none";
+  document.getElementById("recept-detail").style.display = "block";
+  document.getElementById("recept-detail-inhoud").innerHTML = `
+    <h2 style="font-family:'Playfair Display',serif;font-size:24px;color:#3d2b1f;margin-bottom:4px;">${r.naam}</h2>
+    ${r.beschrijving ? `<p style="color:#8b6f47;font-size:14px;font-style:italic;margin-bottom:12px;">${r.beschrijving}</p>` : ""}
+    ${r.bronUrl ? `<a href="${r.bronUrl}" target="_blank" style="font-size:12px;color:#6b8f5e;display:block;margin-bottom:16px;word-break:break-all;">🔗 ${r.bronUrl}</a>` : ""}
+    <div class="recept-meta">
+      ${r.bereidingstijd ? `<span class="tag" style="background:#f0f9f0;color:#4a7a3e;">⏱ ${r.bereidingstijd}</span>` : ""}
+      ${r.personen ? `<span class="tag" style="background:#fff3e0;color:#8b5000;">👤 ${r.personen} personen</span>` : ""}
+    </div>
+    <h3 style="font-family:'Playfair Display',serif;font-size:16px;color:#3d2b1f;margin-bottom:10px;">Ingrediënten</h3>
+    <ul style="padding-left:20px;font-size:14px;color:#5a4030;line-height:2;">
+      ${(r.ingredienten||[]).map(i => `<li>${i}</li>`).join("")}
+    </ul>
+    <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="ingrediëntenNaarBoodschappen('${r.id}')">🛒 Ingrediënten op boodschappenlijst</button>
+      <button class="btn btn-danger" onclick="verwijderRecept('${r.id}')">Recept verwijderen</button>
+    </div>`;
+};
+
+window.sluitReceptDetail = function() {
+  document.getElementById("recepten-overzicht").style.display = "block";
+  document.getElementById("recept-detail").style.display = "none";
+  huidigRecept = null;
+};
+
+window.ingrediëntenNaarBoodschappen = function(id) {
+  const r = (data.recepten||[]).find(r => r.id == id);
+  if (!r) return;
+  const nieuw = (r.ingredienten||[])
+    .filter(ing => !(data.boodschappen||[]).some(b => b.naam.toLowerCase().includes(ing.toLowerCase().replace(/^\d+[a-z]* /i,""))))
+    .map(ing => ({ id: Date.now().toString() + Math.random(), naam: ing, gekocht: false }));
+  opslaan({ ...data, boodschappen: [...(data.boodschappen||[]), ...nieuw] });
+  toast(`🛒 ${nieuw.length} ingrediënten toegevoegd`);
+  sluitReceptDetail();
+};
+
+window.verwijderRecept = function(id) {
+  opslaan({ ...data, recepten: (data.recepten||[]).filter(r => r.id != id) });
+  sluitReceptDetail();
+};
+
+window.slaReceptOp = function() {
+  const naam = document.getElementById("r-naam").value.trim();
+  if (!naam) return;
+  const recept = {
+    id: Date.now().toString(),
+    naam,
+    beschrijving: document.getElementById("r-beschrijving").value.trim(),
+    ingredienten: document.getElementById("r-ingredienten").value.split("\n").map(s=>s.trim()).filter(Boolean),
+    bereidingstijd: document.getElementById("r-tijd").value.trim(),
+    personen: Number(document.getElementById("r-personen").value) || 4,
+  };
+  opslaan({ ...data, recepten: [...(data.recepten||[]), recept] });
+  ["r-naam","r-beschrijving","r-ingredienten","r-tijd"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("recept-form").style.display = "none";
+  toast("✓ Recept opgeslagen!");
+};
+
+// ── URL Import via Anthropic API ──────────────────────────────────────────────
+window.importeerUrl = async function() {
+  const url = document.getElementById("import-url").value.trim();
+  if (!url) return;
+  const btn = document.getElementById("import-btn");
+  const status = document.getElementById("import-status");
+  btn.textContent = "⏳ Ophalen...";
+  btn.disabled = true;
+  status.innerHTML = "";
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        messages: [{ role: "user", content: `Haal het recept op van deze URL: ${url}\n\nGeef het recept terug als ALLEEN een JSON object (geen uitleg, geen markdown, geen backticks) in dit formaat:\n{"naam":"...","beschrijving":"...","ingredienten":["..."],"bereidingstijd":"...","personen":4}\n\nGeef ALLEEN het JSON object terug, niets anders.` }]
+      })
+    });
+    const result = await response.json();
+    const tekst = result.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+    const clean = tekst.replace(/```json|```/g,"").trim();
+    const r = JSON.parse(clean);
+
+    status.innerHTML = `
+      <div style="background:white;border:1px solid #c8e0c0;border-radius:10px;padding:14px;">
+        <div style="font-family:'Playfair Display',serif;font-size:17px;color:#3d2b1f;margin-bottom:4px;">${r.naam}</div>
+        ${r.beschrijving ? `<div style="font-size:13px;color:#8b6f47;font-style:italic;margin-bottom:8px;">${r.beschrijving}</div>` : ""}
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+          ${r.bereidingstijd?`<span class="tag" style="background:#f0f9f0;color:#4a7a3e;">⏱ ${r.bereidingstijd}</span>`:""}
+          ${r.personen?`<span class="tag" style="background:#fff3e0;color:#8b5000;">👤 ${r.personen} p.</span>`:""}
+        </div>
+        <div style="font-size:12px;color:#6b8f5e;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Ingrediënten</div>
+        <ul style="padding-left:18px;font-size:13px;color:#5a4030;line-height:1.8;margin-bottom:12px;">
+          ${(r.ingredienten||[]).slice(0,6).map(i=>`<li>${i}</li>`).join("")}
+          ${(r.ingredienten||[]).length>6?`<li style="color:#b0a090;">... en nog ${r.ingredienten.length-6} meer</li>`:""}
+        </ul>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" id="bevestig-import-btn">✓ Recept opslaan</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('import-status').innerHTML='';document.getElementById('import-url').value=''">Annuleren</button>
+        </div>
+      </div>`;
+
+    document.getElementById("bevestig-import-btn").onclick = () => {
+      const recept = {
+        id: Date.now().toString(),
+        naam: r.naam || "Onbekend recept",
+        beschrijving: r.beschrijving || "",
+        ingredienten: Array.isArray(r.ingredienten) ? r.ingredienten : [],
+        bereidingstijd: r.bereidingstijd || "",
+        personen: Number(r.personen) || 4,
+        bronUrl: url,
+      };
+      opslaan({ ...data, recepten: [...(data.recepten||[]), recept] });
+      document.getElementById("import-url").value = "";
+      document.getElementById("import-status").innerHTML = "";
+      document.getElementById("url-import-form").style.display = "none";
+      toast("✓ Recept opgeslagen!");
+    };
+  } catch(e) {
+    status.innerHTML = `<div style="background:#fff0f0;border:1px solid #f5c0c0;border-radius:8px;padding:12px;font-size:13px;color:#c05050;">❌ Kon het recept niet ophalen. Probeer een andere URL of voer het handmatig in.</div>`;
+  }
+
+  btn.textContent = "Importeer";
+  btn.disabled = false;
+};
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
